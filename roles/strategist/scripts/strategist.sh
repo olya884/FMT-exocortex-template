@@ -19,7 +19,7 @@ REPO_DIR="$(dirname "$SCRIPT_DIR")"
 # На Mac: build-runtime подставляет плейсхолдеры в .iwe-runtime/strategist.sh.
 # На сервере (без build-runtime): резолвится через env vars с fallback.
 # IWE_WORKSPACE / IWE_GOVERNANCE_REPO задаются в /etc/iwe/env или ~/.config/aist/env.
-WORKSPACE="${IWE_WORKSPACE:-$HOME/IWE}/${IWE_GOVERNANCE_REPO:-{{GOVERNANCE_REPO}}}"
+WORKSPACE="${IWE_WORKSPACE:-$HOME/IWE}/${IWE_GOVERNANCE_REPO:-DS-strategy}"
 
 # PROMPTS_DIR резолв: $IWE_TEMPLATE (Generated runtime) → $HOME/IWE/FMT-exocortex-template (default) → relative (legacy fallback)
 if [ -n "${IWE_TEMPLATE:-}" ] && [ -d "$IWE_TEMPLATE/roles/strategist/prompts" ]; then
