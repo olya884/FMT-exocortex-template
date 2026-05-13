@@ -342,10 +342,13 @@ rm -rf "$EXT_TEST_WS"
 # что все обязательные файлы реально оказались в workspace.
 echo "[9] e2e setup.sh delivery (SETUP_CI=1 --core)..."
 E2E_WS="/tmp/iwe-smoke-e2e-$$"
-E2E_MEM="$HOME/.claude/projects/$(echo "$E2E_WS" | tr '/' '-')/memory"
-mkdir -p "$E2E_WS"
+# HOME isolation обязательна — иначе install-iwe-paths.sh перезатрёт реальный $HOME/.iwe-paths
+# автора smoke-test путём /tmp/iwe-smoke-e2e-* (collateral pollution, баг 0.7.x).
+E2E_HOME="$E2E_WS/home"
+E2E_MEM="$E2E_HOME/.claude/projects/$(echo "$E2E_WS" | tr '/' '-')/memory"
+mkdir -p "$E2E_WS" "$E2E_HOME"
 E2E_RC=0
-E2E_OUT=$(SETUP_CI=1 GITHUB_USER=smoke-e2e WORKSPACE_DIR="$E2E_WS" \
+E2E_OUT=$(HOME="$E2E_HOME" SETUP_CI=1 GITHUB_USER=smoke-e2e WORKSPACE_DIR="$E2E_WS" \
     GIT_AUTHOR_NAME="smoke-e2e" GIT_AUTHOR_EMAIL="smoke@test.local" \
     GIT_COMMITTER_NAME="smoke-e2e" GIT_COMMITTER_EMAIL="smoke@test.local" \
     bash "$TEMPLATE_DIR/setup.sh" --core 2>&1) || E2E_RC=$?
@@ -405,6 +408,32 @@ if grep -A5 'cp.*memory/.*\.md' "$SETUP_SH" | grep -qE '\.yaml|\.yml'; then
     pass "setup.sh step 3: memory/*.yaml/.yml копируются"
 else
     fail "setup.sh step 3: memory/*.yaml/.yml НЕ копируются (day-rhythm-config.yaml не доставляется)"
+fi
+
+# === Test 8c: setup.sh step 5 (роли) сорсит ~/.iwe-paths перед install.sh (баг 0.7.x) ===
+# Регрессия от 13 мая 2026: setup.sh запускал `bash $role_dir/install.sh` без
+# экспорта IWE_RUNTIME/IWE_WORKSPACE → install.sh падал в legacy fallback с {{плейсхолдерами}}.
+# Контракт: между объявлением "[5/6] Installing roles..." и вызовом install.sh
+# должен быть source ~/.iwe-paths (или эквивалентный exporting IWE_RUNTIME).
+echo "[8c] setup.sh step 5: source ~/.iwe-paths перед role install.sh..."
+# Берём блок между "Installing roles" и первым вызовом install.sh
+STEP5_BLOCK=$(awk '/\[5\/6\] Installing roles/{flag=1} flag; flag && /bash.*install\.sh/{exit}' "$SETUP_SH")
+if echo "$STEP5_BLOCK" | grep -qE '(\.|source)[[:space:]]+"?\$HOME/\.iwe-paths|export[[:space:]]+IWE_RUNTIME'; then
+    pass "setup.sh step 5: env для install.sh подготовлен (source .iwe-paths или export IWE_RUNTIME)"
+else
+    fail "setup.sh step 5: install.sh вызывается БЕЗ IWE_RUNTIME (legacy mode → fail-fast у пользователя)"
+fi
+
+# === Test 8d: setup.sh --validate ищет .exocortex.env в WORKSPACE_DIR (баг 0.7.x) ===
+# Регрессия: WP-273 Этап 2 переместил .exocortex.env из FMT в $WORKSPACE_DIR,
+# но --validate блок продолжал искать в $SCRIPT_DIR. Артем получил
+# ".exocortex.env не найден" хотя файл существовал в правильном месте.
+echo "[8d] setup.sh --validate проверяет WORKSPACE_DIR/.exocortex.env..."
+VALIDATE_BLOCK=$(awk '/VALIDATE_ONLY; then/,/exit "\$ERRORS"/' "$SETUP_SH")
+if echo "$VALIDATE_BLOCK" | grep -qE 'WORKSPACE.*\.exocortex\.env|dirname.*SCRIPT_DIR'; then
+    pass "setup.sh --validate: .exocortex.env ищется в WORKSPACE_DIR (WP-273)"
+else
+    fail "setup.sh --validate: .exocortex.env ищется только в SCRIPT_DIR (regression pre-WP-273)"
 fi
 
 echo ""
