@@ -306,6 +306,9 @@
       "path": ".github/workflows/post-release-audit.yml"
     },
     {
+      "path": ".github/workflows/stale.yml"
+    },
+    {
       "path": ".github/workflows/validate-template.yml"
     },
     {
@@ -465,7 +468,19 @@
       "path": "extensions/agent-inbox/templates/soak-verify.md"
     },
     {
+      "path": "extensions/day-close.checks.session-orphans.md"
+    },
+    {
+      "path": "extensions/day-open.after.session-orphans.md"
+    },
+    {
+      "path": "extensions/protocol-close.after.session-record.md"
+    },
+    {
       "path": "extensions/protocol-close.checks.fault.md"
+    },
+    {
+      "path": "extensions/protocol-close.checks.md"
     },
     {
       "path": "extensions/protocol-open.after.fault.md"
@@ -832,240 +847,6 @@
       "path": "roles/verifier/role.yaml"
     },
     {
-      "path": "scripts/active-wp-sweep.sh"
-    },
-    {
-      "path": "scripts/agent-dashboard.py"
-    },
-    {
-      "path": "scripts/agent_fault_remind.py"
-    },
-    {
-      "path": "scripts/agent_fault_remind.sh"
-    },
-    {
-      "path": "scripts/archive-done-wp.sh"
-    },
-    {
-      "path": "scripts/audit-ad-hoc-roles.py"
-    },
-    {
-      "path": "scripts/backup-icloud.sh"
-    },
-    {
-      "path": "scripts/changelog-append.sh"
-    },
-    {
-      "path": "scripts/changelog-flush.sh"
-    },
-    {
-      "path": "scripts/check-dirty-repos.sh"
-    },
-    {
-      "path": "scripts/check-manifest-coverage.py"
-    },
-    {
-      "path": "scripts/check-open-sessions.sh"
-    },
-    {
-      "path": "scripts/check-script-collisions.sh"
-    },
-    {
-      "path": "scripts/check-setup-update-parity.sh"
-    },
-    {
-      "path": "scripts/claude-peer-adapter.sh"
-    },
-    {
-      "path": "scripts/close-wp.sh"
-    },
-    {
-      "path": "scripts/coverage-skills.sh"
-    },
-    {
-      "path": "scripts/create-skill.sh"
-    },
-    {
-      "path": "scripts/create-wp.sh"
-    },
-    {
-      "path": "scripts/day-close.sh"
-    },
-    {
-      "path": "scripts/day-open-scaffold.sh"
-    },
-    {
-      "path": "scripts/fmt-critical-alert.sh"
-    },
-    {
-      "path": "scripts/generate-diagnose-iwe-skill.py"
-    },
-    {
-      "path": "scripts/generate-executor-catalog.py"
-    },
-    {
-      "path": "scripts/generate-helper-catalog.py"
-    },
-    {
-      "path": "scripts/generate-skills-catalog.sh"
-    },
-    {
-      "path": "scripts/headless-runner.sh"
-    },
-    {
-      "path": "scripts/hook-promote.sh"
-    },
-    {
-      "path": "scripts/iwe-agent-dispatcher.py"
-    },
-    {
-      "path": "scripts/iwe-audit.sh"
-    },
-    {
-      "path": "scripts/iwe-backup-check.sh"
-    },
-    {
-      "path": "scripts/iwe-catalog-list.py"
-    },
-    {
-      "path": "scripts/iwe-drift-helpers/check-arch-version.sh"
-    },
-    {
-      "path": "scripts/iwe-drift-helpers/check-status-legend.sh"
-    },
-    {
-      "path": "scripts/iwe-drift.sh"
-    },
-    {
-      "path": "scripts/iwe-grep-secret.sh"
-    },
-    {
-      "path": "scripts/iwe-trace.py"
-    },
-    {
-      "path": "scripts/kimi-peer-adapter.sh"
-    },
-    {
-      "path": "scripts/lesson-close.sh"
-    },
-    {
-      "path": "scripts/memory-active-wp-update.sh"
-    },
-    {
-      "path": "scripts/memory-bleed.sh"
-    },
-    {
-      "path": "scripts/memory-health.sh"
-    },
-    {
-      "path": "scripts/memory-migrate.sh"
-    },
-    {
-      "path": "scripts/memory-validate.sh"
-    },
-    {
-      "path": "scripts/migrate-initial-marker.sh"
-    },
-    {
-      "path": "scripts/migrate-skills-to-v2.sh"
-    },
-    {
-      "path": "scripts/migrate-to-runtime-target.sh"
-    },
-    {
-      "path": "scripts/pack-ci-install.sh"
-    },
-    {
-      "path": "scripts/peer-adapter-filter.py"
-    },
-    {
-      "path": "scripts/pending-phases-sweep.sh"
-    },
-    {
-      "path": "scripts/post-update-check-skills.sh"
-    },
-    {
-      "path": "scripts/promote-common.sh"
-    },
-    {
-      "path": "scripts/restore-from-exocortex.sh"
-    },
-    {
-      "path": "scripts/route-task.sh"
-    },
-    {
-      "path": "scripts/script-promote.sh"
-    },
-    {
-      "path": "scripts/server-calendar.sh"
-    },
-    {
-      "path": "scripts/server-news.sh"
-    },
-    {
-      "path": "scripts/session-dispatcher-tsekh.py"
-    },
-    {
-      "path": "scripts/settings-promote.sh"
-    },
-    {
-      "path": "scripts/setup-extractor-feeders.sh"
-    },
-    {
-      "path": "scripts/skill-promote.sh"
-    },
-    {
-      "path": "scripts/skills-pull.sh"
-    },
-    {
-      "path": "scripts/smoke-clean-env.sh"
-    },
-    {
-      "path": "scripts/staging-audit.sh"
-    },
-    {
-      "path": "scripts/style-check-post-run.sh"
-    },
-    {
-      "path": "scripts/sync-agent-instructions.sh"
-    },
-    {
-      "path": "scripts/sync-communication-style.py"
-    },
-    {
-      "path": "scripts/sync-communication-style.yaml.example"
-    },
-    {
-      "path": "scripts/sync-version-badge.sh"
-    },
-    {
-      "path": "scripts/sync_feedback_to_memory.py"
-    },
-    {
-      "path": "scripts/template-sync.sh"
-    },
-    {
-      "path": "scripts/test-route-task.sh"
-    },
-    {
-      "path": "scripts/tests/conftest.py"
-    },
-    {
-      "path": "scripts/tests/test_agent_dashboard.py"
-    },
-    {
-      "path": "scripts/validate-fmt-scripts.sh"
-    },
-    {
-      "path": "scripts/validate-skill.sh"
-    },
-    {
-      "path": "scripts/week-draft-append.sh"
-    },
-    {
-      "path": "scripts/week-draft-init.sh"
-    },
-    {
       "path": "sessions/00-index.md"
     },
     {
@@ -1112,6 +893,24 @@
     },
     {
       "path": "setup/optional/setup-cloud-scheduler.sh"
+    },
+    {
+      "path": "setup/promote-fixtures/README.md"
+    },
+    {
+      "path": "setup/promote-fixtures/sample-hook.sh"
+    },
+    {
+      "path": "setup/promote-fixtures/sample-script.sh"
+    },
+    {
+      "path": "setup/promote-fixtures/sample-settings.json"
+    },
+    {
+      "path": "setup/promote-fixtures/sample-skill/SKILL.md"
+    },
+    {
+      "path": "setup/promote-fixtures/sample-skill/scripts/sample-tool.sh"
     },
     {
       "path": "setup/release-audit-prompt.md"
@@ -1161,6 +960,99 @@
     {
       "path": "update.sh"
     }
+  ],
+  "excluded_paths": [
+    "AGENTS-agent-blocks.md",
+    "docs/BROWSER-CI-TEMPLATE.md",
+    "docs/maintaining-skills.md",
+    "docs/release-audit-log.md",
+    "promotion-status.yaml",
+    "scripts/active-wp-sweep.sh",
+    "scripts/agent-dashboard.py",
+    "scripts/agent_fault_remind.py",
+    "scripts/agent_fault_remind.sh",
+    "scripts/archive-done-wp.sh",
+    "scripts/audit-ad-hoc-roles.py",
+    "scripts/backup-icloud.sh",
+    "scripts/changelog-append.sh",
+    "scripts/changelog-flush.sh",
+    "scripts/check-dirty-repos.sh",
+    "scripts/check-manifest-coverage.py",
+    "scripts/check-open-sessions.sh",
+    "scripts/check-script-collisions.sh",
+    "scripts/check-setup-update-parity.sh",
+    "scripts/check-wp-format.py",
+    "scripts/claude-peer-adapter.sh",
+    "scripts/close-wp.sh",
+    "scripts/content-filter-apply.py",
+    "scripts/content-filter-map.txt",
+    "scripts/coverage-skills.sh",
+    "scripts/create-skill.sh",
+    "scripts/create-wp.sh",
+    "scripts/day-close.sh",
+    "scripts/day-open-scaffold.sh",
+    "scripts/day-open-smoke-extended.sh",
+    "scripts/day-open-smoke.sh",
+    "scripts/fmt-critical-alert.sh",
+    "scripts/generate-catalogs.py",
+    "scripts/generate-diagnose-iwe-skill.py",
+    "scripts/generate-executor-catalog.py",
+    "scripts/generate-helper-catalog.py",
+    "scripts/generate-skills-catalog.sh",
+    "scripts/headless-runner.sh",
+    "scripts/hook-promote.sh",
+    "scripts/iwe-agent-dispatcher.py",
+    "scripts/iwe-audit.sh",
+    "scripts/iwe-backup-check.sh",
+    "scripts/iwe-catalog-list.py",
+    "scripts/iwe-drift-helpers/check-arch-version.sh",
+    "scripts/iwe-drift-helpers/check-status-legend.sh",
+    "scripts/iwe-drift.sh",
+    "scripts/iwe-grep-secret.sh",
+    "scripts/iwe-trace.py",
+    "scripts/ke-classify.sh",
+    "scripts/ke-queue-stats.sh",
+    "scripts/kimi-peer-adapter.sh",
+    "scripts/lesson-close.sh",
+    "scripts/memory-active-wp-update.sh",
+    "scripts/memory-bleed.sh",
+    "scripts/memory-health.sh",
+    "scripts/memory-migrate.sh",
+    "scripts/memory-validate.sh",
+    "scripts/migrate-initial-marker.sh",
+    "scripts/migrate-skills-to-v2.sh",
+    "scripts/migrate-to-runtime-target.sh",
+    "scripts/pack-ci-install.sh",
+    "scripts/peer-adapter-filter.py",
+    "scripts/pending-phases-sweep.sh",
+    "scripts/post-update-check-skills.sh",
+    "scripts/promote-common.sh",
+    "scripts/restore-from-exocortex.sh",
+    "scripts/route-task.sh",
+    "scripts/script-promote.sh",
+    "scripts/server-calendar.sh",
+    "scripts/server-news.sh",
+    "scripts/session-dispatcher-tsekh.py",
+    "scripts/settings-promote.sh",
+    "scripts/setup-extractor-feeders.sh",
+    "scripts/skill-promote.sh",
+    "scripts/skills-pull.sh",
+    "scripts/smoke-clean-env.sh",
+    "scripts/staging-audit.sh",
+    "scripts/style-check-post-run.sh",
+    "scripts/sync-agent-instructions.sh",
+    "scripts/sync-communication-style.py",
+    "scripts/sync-communication-style.yaml.example",
+    "scripts/sync-version-badge.sh",
+    "scripts/sync_feedback_to_memory.py",
+    "scripts/template-sync.sh",
+    "scripts/test-route-task.sh",
+    "scripts/tests/conftest.py",
+    "scripts/tests/test_agent_dashboard.py",
+    "scripts/validate-fmt-scripts.sh",
+    "scripts/validate-skill.sh",
+    "scripts/week-draft-append.sh",
+    "scripts/week-draft-init.sh"
   ],
   "deprecated_files": [
     {
