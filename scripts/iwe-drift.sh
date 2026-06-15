@@ -23,11 +23,6 @@
 
 set -eu
 
-# Bootstrap: load .exocortex.env via IWE_ROOT (set -Ux in fish, universal)
-if [ -n "${IWE_ROOT:-}" ] && [ -f "$IWE_ROOT/.exocortex.env" ]; then
-  set -a; . "$IWE_ROOT/.exocortex.env"; set +a
-fi
-
 # Detect stat mtime flag once — BSD/macOS uses -f %m, GNU/Linux uses -c %Y.
 # Use unquoted $_STAT_FLAG in xargs pipelines (word-split is required for multi-token flags).
 if stat -f %m /dev/null >/dev/null 2>&1; then

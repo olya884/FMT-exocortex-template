@@ -17,20 +17,16 @@
 
 set -euo pipefail
 
-# Bootstrap: load .exocortex.env via IWE_ROOT (set -Ux in fish, universal)
-if [ -n "${IWE_ROOT:-}" ] && [ -f "$IWE_ROOT/.exocortex.env" ]; then
-  set -a; . "$IWE_ROOT/.exocortex.env"; set +a
-fi
-
 # === КОНФИГУРАЦИЯ (настроить при установке) ===
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=/dev/null
 source "$SCRIPT_DIR/../.claude/lib/iwe-env-bootstrap.sh" || exit 1
 GOVERNANCE_REPO="${GOVERNANCE_REPO:-${IWE_GOVERNANCE_REPO:-DS-strategy}}"
 DS_STRATEGY="$WORKSPACE_DIR/$GOVERNANCE_REPO"
-_ws_proj=$(printf '%s' "$WORKSPACE_DIR" | tr '/_' '-')
-MEMORY_SRC="${IWE_MEMORY_SRC:-$HOME/.claude/projects/${_ws_proj}/memory}"
-unset _ws_proj
+# Slug = $HOME с '/' → '-' (macOS: /Users/x → -Users-x; Linux/WSL: /home/x → -home-x).
+# Переопределить можно через env IWE_MEMORY_SRC (например, для нестандартного $HOME).
+HOME_SLUG=$(echo "$HOME" | tr '/' '-')
+MEMORY_SRC="${IWE_MEMORY_SRC:-$HOME/.claude/projects/${HOME_SLUG}-IWE/memory}"
 EXOCORTEX_DST="$DS_STRATEGY/exocortex"
 # MCP reindex — опциональный компонент (WP-187 iwe-knowledge Gateway заменяет локальный knowledge-mcp).
 # Переопределить путь можно через env IWE_SELECTIVE_REINDEX.
