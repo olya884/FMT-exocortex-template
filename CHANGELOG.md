@@ -58,13 +58,23 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 
 
+
+
+
+
+
+
+
 ## [Unreleased] — обновлено 2026-06-20
 
 ### Added
 
+- `ae5e638` feat(translation): add translate.py pipeline + en-doc-style.md
+- `0f54175` feat(wp-432): USER-SPACE customization zones in L1 skills
+- `49443ad` feat(wp-149): promote lesson-close SKILL.md to platform (L1) — lesson/ path
 - `25056ef` feat(WP-5): iwe-bug-report executor→agent + update.sh Step 6f orphan detection
 - `1593f13` feat(WP-295): promote rule-engine.sh + generate-rules-registry.py to platform
-- `3a17360` feat(diagnose): promote diagnose v5.0 to platform (L1)
+- `3a17360` feat(diagnose): promote diagnose-iwe v5.0 to platform (L1)
 - `3491420` feat(day-close): ask pilot for tomorrow priorities and update priorities.yaml
 - `1651574` feat(skills): promote 6 top skills to FMT with advisory fixes (WP-422)
 - `bcdb0ed` feat(skills): promote skill-creator v0.3.2 + C6 audit + pg-start Verification
@@ -80,12 +90,11 @@ Versioning: [Semantic Versioning](https://semver.org/).
 - `5e21531` feat(WP-7/SP1): refactor skill-promote.sh — safety, validation, tests
 - `53cd985` feat(day-open): add ТВС labeling step to skill template (§6b2)
 - `36febfd` feat(strategy): модель ТВС в шаблон (стратегирование + ОРЗ)
-- `673474d` feat(WP-388): проекция базы стиля — 4 новых элемента регистра (зеркало L0)
-- `dd117c5` feat(styles): WP-412 Ф11 — дисциплина языковых стилей в шаблон IWE
-- `83434ea` feat: promote pull-on-touch.sh — детерминированный Pull-on-Touch (CLAUDE.md §2 п.5)
 
 ### Changed
 
+- `7baebc5` refactor(diagnose): rename skill diagnose-iwe -> diagnose
+- `89c0837` chore: remove dead hook wakatime-heartbeat.sh
 - `70d540b` docs: remove PACK-MIM from CHANGELOG [protocol-close]
 - `ed2cca0` docs: add KIMI-SETUP.md — инструкция по подключению Kimi к IWE
 - `d98c62e` chore(skill-creator): bump version to 0.3.0 (sync from IWE)
@@ -96,6 +105,12 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- `b7d1c4c` fix(diagnose): remove duplicate /diagnose trigger entries after rename
+- `ac815a0` fix(skill-promote): GNU-first stat for cross-platform permission preservation
+- `f10e03e` fix(skill-promote): cross-platform cp — copy CONTENTS, not nested dir
+- `ab0c385` fix(wp-432): repair skill-promote tests broken by L1 USER-SPACE feature
+- `ac15602` fix(diagnose-iwe): update form-089.yaml to v5.0 + add USER-SPACE marker
+- `9ac6df2` fix(naming): Решат → Ильшат во всех упоминаниях имени [no-registry-touch]
 - `7e07287` fix: update manifest to exclude auto-generated translation files
 - `de06083` fix(wp-149): sync lesson-close.sh to use lesson/ path instead of workbook/
 - `24dbd80` fix: update subscription name from Бесконечное развитие to Инженерия интеллекта in template
@@ -110,12 +125,11 @@ Versioning: [Semantic Versioning](https://semver.org/).
 - `daeaa01` fix(manifest): exclude .backups/, add promoted skill files (artifactor + skill-creator)
 - `4d7c2f3` fix(skill-creator): remove /create-skill alias from triggers and description
 - `9bd0593` fix(update.sh): Windows SSL revocation flag detection via curl --help
-- `b1b45cd` fix(WP-7): strategist runner env fallback + diagnose YAML sync (#136 #122)
+- `b1b45cd` fix(WP-7): strategist runner env fallback + diagnose-iwe YAML sync (#136 #122)
 - `a823c51` fix(WP-7): setup/validate-template.sh delivery, CLAUDE.md conflict hard-fail, manifest coverage
 - `8073146` fix(WP-7): FMT delivery — .claude/styles propagation, manifest sync, smoke Test 6e
 - `cb8a1a6` fix(COL-06): communication-style-base.md — L1 → S1 (авторский слой)
 - `06b9d79` fix(WP-376): A52/A49/A50/A51 — template hygiene и agentigore sample
-- `c869a3c` fix(pull-on-touch): autostash вместо пропуска-на-грязном — тянет даже на dirty-репо
 
 
 ## [0.35.4] — 2026-06-15

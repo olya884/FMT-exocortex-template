@@ -157,6 +157,10 @@ substitute_file "$DEST/SKILL.md"
 if grep -q '^<!-- USER-SPACE -->' "$DEST/SKILL.md" 2>/dev/null; then
     perl -i -0pe 's/^(<!-- USER-SPACE -->)\n.*?\n(<!-- \/USER-SPACE -->)/$1\n$2/ms' "$DEST/SKILL.md"
 fi
+# -- Ensure USER-SPACE marker exists in L1 SKILL.md (required by validate-fmt-scripts.sh)
+if ! grep -q '^<!-- USER-SPACE -->' "$DEST/SKILL.md" 2>/dev/null; then
+    printf '\n<!-- USER-SPACE -->\n<!-- /USER-SPACE -->\n' >> "$DEST/SKILL.md"
+fi
 # -- Replace install_constants actual values with {{KEY}} placeholders
 IC_BLOCK=$(awk '/^install_constants:/{found=1} found && /^[a-z][^:]+:/ && !/^install_constants:/{exit} found{print}' "$DEST/SKILL.md" 2>/dev/null || true)
 if [ -n "$IC_BLOCK" ]; then

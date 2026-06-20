@@ -2,7 +2,7 @@
 # see DP.SC.153
 # НЕ редактировать вручную — перегенерировать через generate-skills-catalog.sh
 #
-generated: 2026-06-20T06:27:54Z
+generated: 2026-06-20T16:51:01Z
 skills_dir: .claude/skills
 
 skills:
@@ -304,12 +304,13 @@ skills:
     - personal-guide-render
   - id: month-close
     name: "month-close"
-    description: "Month Close protocol. Stage 7 of the OWC v9 cascade (PD.METHOD.008). Runs on the first Monday of the month, before Strategy Session."
+    description: "Протокол закрытия месяца (Month Close). Стадия 7 каскада ВДВ v9 (PD.METHOD.008). Запускается в первый Пн месяца, до Strategy Session."
     version: 1.0.0
-    layer: unknown
+    layer: L1
     status: active
     triggers:
-      slash: []
+      slash:
+        - /month-close
     depends_on: []
     invoked_by:
     - CLAUDE.md
@@ -353,9 +354,9 @@ skills:
     - pack-creator
   - id: peer-conversation
     name: "peer-conversation"
-    description: "Multi-turn dialog between writer (Claude) and partner (Kimi) on the pilot's task (DP.SC.154). Manages turn-loop, detects CONSENSUS/ESCALATE, after consensus — Decision Gate (record vs implement → review → verify → deploy), synthesizes report.md via Agent tool."
+    description: "Многотуровый диалог писателя (Claude) с напарником (Kimi) по задаче пилота (DP.SC.154). Ведёт turn-loop, обнаруживает CONSENSUS/ESCALATE, после консенсуса — Decision Gate (зафиксировать vs реализовать → ревью → проверить → задеплоить), синтезирует report.md через Agent tool."
     version: 1.2.0
-    layer: L3
+    layer: L1
     status: active
     triggers:
       slash:
