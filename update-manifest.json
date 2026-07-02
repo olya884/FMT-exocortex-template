@@ -981,6 +981,114 @@
       "path": "translation/glossary-v0.1.csv"
     },
     {
+      "path": ".cursor/hooks.json"
+    },
+    {
+      "path": ".cursor/hooks/capture-bus.sh"
+    },
+    {
+      "path": ".cursor/hooks/delegate-claude-hook.sh"
+    },
+    {
+      "path": ".cursor/hooks/destructive-guard.sh"
+    },
+    {
+      "path": ".cursor/hooks/inject-context.sh"
+    },
+    {
+      "path": ".cursor/hooks/lib/iwe-env.sh"
+    },
+    {
+      "path": ".cursor/hooks/lib/normalize-input.py"
+    },
+    {
+      "path": ".cursor/hooks/lib/parse-transcript.py"
+    },
+    {
+      "path": ".cursor/hooks/memory-exocortex-sync.sh"
+    },
+    {
+      "path": ".cursor/hooks/prompt-context.sh"
+    },
+    {
+      "path": ".cursor/hooks/protocol-stop-gate.sh"
+    },
+    {
+      "path": ".cursor/hooks/pull-on-touch.sh"
+    },
+    {
+      "path": ".cursor/hooks/session-start.sh"
+    },
+    {
+      "path": ".cursor/rules/iwe-core.mdc"
+    },
+    {
+      "path": ".cursor/rules/iwe-cursor-agent.mdc"
+    },
+    {
+      "path": ".cursor/rules/iwe-git.mdc"
+    },
+    {
+      "path": ".cursor/rules/iwe-sync-core.mdc"
+    },
+    {
+      "path": ".cursor/skills/SKILL-INDEX.md"
+    },
+    {
+      "path": ".cursor/skills/apply-captures/SKILL.md"
+    },
+    {
+      "path": ".cursor/skills/archgate/SKILL.md"
+    },
+    {
+      "path": ".cursor/skills/author-mode/SKILL.md"
+    },
+    {
+      "path": ".cursor/skills/bottleneck-pick/SKILL.md"
+    },
+    {
+      "path": ".cursor/skills/day-close/SKILL.md"
+    },
+    {
+      "path": ".cursor/skills/day-open/SKILL.md"
+    },
+    {
+      "path": ".cursor/skills/decompose/SKILL.md"
+    },
+    {
+      "path": ".cursor/skills/fpf/SKILL.md"
+    },
+    {
+      "path": ".cursor/skills/integration-gate/SKILL.md"
+    },
+    {
+      "path": ".cursor/skills/iwe-bug-report/SKILL.md"
+    },
+    {
+      "path": ".cursor/skills/month-close/SKILL.md"
+    },
+    {
+      "path": ".cursor/skills/run-protocol/SKILL.md"
+    },
+    {
+      "path": ".cursor/skills/strategy-session/SKILL.md"
+    },
+    {
+      "path": ".cursor/skills/think/SKILL.md"
+    },
+    {
+      "path": ".cursor/skills/verify/SKILL.md"
+    },
+    {
+      "path": ".cursor/skills/week-close/SKILL.md"
+    },
+    {
+      "path": ".cursor/skills/wp-new/SKILL.md"
+    },
+    {
+      "path": "CURSOR-agent-blocks.md"
+    },
+    {
       "path": "update.sh"
     }
   ],

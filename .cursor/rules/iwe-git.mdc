@@ -1,0 +1,34 @@
+---
+description: IWE — git staging, commit, push, drift
+alwaysApply: true
+---
+
+# Git — CRITICAL
+
+**Запрещено:** `git add -u`, `git add .`, `git add -A` — захватывает чужие изменения других агентов.
+
+**Правильно:**
+```bash
+git add path/to/specific-file.md
+git diff --cached --name-only   # перед каждым commit
+```
+
+Чужие файлы в staged → `git restore --staged <file>`.
+
+## Push / Close
+
+- «заливай/запуши/закрывай» → commit+push без вопросов.
+- При Close: `git status` по всем репо → незафиксированное → commit+push до следующего шага.
+- **Не коммитить** без явного запроса, кроме триггера Push.
+
+## Drift
+
+Расхождение план/файл → сообщить пилоту, не чинить молча: «Found drift: [что] in [file]. Fix?»
+
+## Имена артефактов
+
+Не выдумывать. Из плана/задачи. Нет имени → «need clarification on name».
+
+## WP-REGISTRY
+
+Колонка «Название» = только имя артефакта ≤80 символов. Без дат, SHA, метрик, статусов фаз.

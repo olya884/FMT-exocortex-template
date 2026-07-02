@@ -1,0 +1,42 @@
+---
+description: IWE SYNC-CORE — единое ядро агентов (автогенерация)
+alwaysApply: true
+---
+
+
+## WP Gate — CRITICAL
+
+**ЛЮБОЕ задание → протокол Открытия → ДО начала работы.** При создании нового РП: объявить роль, работу, РП, класс верификации, метод, оценку, модель. Дождаться согласования пилота.
+
+## Git Staging — CRITICAL
+
+**NEVER use `git add -u`, `git add .`, or `git add -A`.** Picks up other agents' changes.
+
+**Always stage only specific files you edited:**
+```bash
+git add path/to/specific-file.md   # correct
+# git add -u / git add . / git add -A  — FORBIDDEN
+```
+
+**Before every commit:** `git diff --cached --name-only` → confirm all files belong to current WP/context. Unexpected files → `git restore --staged <file>`.
+
+## Artifact Naming
+**Do not invent artifact names.** Names come from the plan/task. If silent on name — report "need clarification on name."
+## Drift Reporting
+Discrepancy found → **Report to pilot, do not silently fix.** "Found drift: [what] in [file]. Fix?" Fix only if instructed.
+## Working Directory
+`/Users/olya/IWE/`
+## Status Reporting
+Start: `agent_status_update(agent=claude-code, status=working, task=..., files=[...])`. Done: `status=idle`. Team repo: add `repo="org/repo-name"`. Fail-safe: Stop-хук → `scripts/agent-status-report.sh`.
+## WP-REGISTRY Naming — CRITICAL
+**Колонка «Название» = ТОЛЬКО имя артефакта ≤80 символов.** Запрещено: даты, SHA, метрики, статусы фаз, ссылки. Итог → `archive/wp-contexts/WP-NNN.md §Закрытие`. Статус фаз → frontmatter `inbox/WP-NNN.md`.
+## WP Context Scope — Umbrella РП
+`umbrella: true` + `agent_scope: open-only` → читать только `pending/in_progress/blocked`. Архивные — не читать без запроса. Применяется к: WP-5, WP-7.
+## Calendar Events — CRITICAL
+**Все события агента — ДО 09:00.** Создано после 09:00 → удалить + пересоздать + сообщить пилоту.
+## Language
+Respond in Russian unless the user writes in English.
+## Response Style — Pilot-Facing
+Применять A1-A11 (`memory/feedback_response_clarity_for_pilot.md`). Channel: технический (commit/PR + пилот пишет `grep`/`git`/SHA) vs «на пальцах» (остальной чат).
+## Code Style — Engineering (DP.SC.172)
+→ `engineering-code-style-base.md` (PACK-digital-platform). P0 форматтер+линтер; P1 тест без assert запрещён; P2 повторение×3 → функция; P3 мёртвую ветку удалять; P4 `except: pass` без лога запрещён.

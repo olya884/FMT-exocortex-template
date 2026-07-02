@@ -1,0 +1,37 @@
+---
+description: IWE — архитектура, ОРЗ-фрактал, блокирующие правила
+alwaysApply: true
+---
+
+# IWE Core
+
+Рабочая директория: `/Users/olya/IWE/`. Отвечать на русском, если пользователь не пишет по-английски.
+
+## Архитектура
+
+- **Fallback Chain:** DS → Pack → Base. Pack = source-of-truth доменного знания.
+- Новый Pack → `.claude/skills/pack-new/SKILL.md`. Детали: `memory/repo-type-rules.md`.
+
+## ОРЗ
+
+| Масштаб | Открытие | Работа | Закрытие |
+|---------|----------|--------|----------|
+| Сессия | `memory/protocol-open.md` | `memory/protocol-work.md` | протокол Закрытия |
+| День | `.claude/skills/day-open/SKILL.md` | — | day-close |
+
+## Блокирующие (кратко)
+
+1. **WP Gate** — любое задание → Открытие ДО работы; новый РП → объявить и ждать «да».
+2. **Push** — «заливай/запуши/закрывай» → commit+push без вопросов.
+3. **Pull-on-Touch** — `git pull --rebase` при первом касании репо за сессию.
+4. **Hooks Bypass** — не менять `.claude/hooks/`, `.claude/scripts/`, `.cursor/hooks/`, `.iwe-runtime/` без разрешения.
+5. **Автономность** — не спрашивать «добавить/продолжить?»; исключения: необратимое, WP Gate, «X или Y?».
+6. **ArchGate** — архитектурное решение → `.claude/skills/archgate/SKILL.md`.
+
+## Memory
+
+| Ситуация | Файл |
+|----------|------|
+| Навигация | `memory/navigation.md` |
+| Термины | `memory/hard-distinctions.md` |
+| Форматирование | `.claude/rules/formatting.md` |

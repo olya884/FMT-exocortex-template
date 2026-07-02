@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": ".cursor/hooks/session-start.sh"
+      }
+    ],
+    "beforeSubmitPrompt": [
+      {
+        "command": ".cursor/hooks/prompt-context.sh"
+      }
+    ],
+    "preToolUse": [
+      {
+        "command": ".cursor/hooks/pull-on-touch.sh",
+        "matcher": "Read|Write|Grep|Shell"
+      }
+    ],
+    "postToolUse": [
+      {
+        "command": ".cursor/hooks/memory-exocortex-sync.sh",
+        "matcher": "Write"
+      },
+      {
+        "command": ".cursor/hooks/capture-bus.sh",
+        "matcher": "Write|Shell"
+      },
+      {
+        "command": ".cursor/hooks/inject-context.sh"
+      }
+    ],
+    "beforeShellExecution": [
+      {
+        "command": ".cursor/hooks/destructive-guard.sh"
+      }
+    ],
+    "stop": [
+      {
+        "command": ".cursor/hooks/capture-bus.sh",
+        "loop_limit": 1
+      },
+      {
+        "command": ".cursor/hooks/protocol-stop-gate.sh",
+        "loop_limit": 2
+      }
+    ]
+  }
+}

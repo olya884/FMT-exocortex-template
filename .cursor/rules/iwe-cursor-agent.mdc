@@ -1,0 +1,43 @@
+---
+description: IWE — специфика Cursor Agent (скиллы, subagents, MCP)
+alwaysApply: true
+---
+
+# Cursor Agent
+
+## Скиллы IWE
+
+Индекс: `.cursor/skills/SKILL-INDEX.md`. P0+P1 в `.cursor/skills/`. Алгоритмы — `.claude/skills/<name>/SKILL.md`.
+
+## Хуки (`.cursor/hooks.json`)
+
+- P0: sessionStart, prompt-context, pull-on-touch, inject-context, destructive-guard
+- P1: memory-exocortex-sync (Write), capture-bus (Write/Shell/stop), protocol-stop-gate (stop)
+
+## Subagents
+
+- Quick/Day Close верификация → subagent (fast-модель).
+- LegacyPortGate → 15-мин subagent «как сейчас?» до решения.
+- Не запускать параллельные правки одного файла.
+
+## MCP
+
+При подключённом Aisystant: `get_instructions`, `update_peer_status`, `acquire_file_lock` / `release_file_lock`.
+Без MCP — автономная работа по файлам репо.
+
+## Координация
+
+Перед правкой: declare working + lock (если MCP доступен). Конфликт lock → подождать или другой файл.
+
+## Ответы пилоту
+
+Правила A1-A11: `memory/feedback_response_clarity_for_pilot.md`.
+Технический канал — commit/PR; «на пальцах» — обычный чат.
+
+## Umbrella РП
+
+`umbrella: true` + `agent_scope: open-only` → только `pending/in_progress/blocked` (WP-5, WP-7).
+
+## Календарь
+
+События агента — только до 09:00.
