@@ -50,8 +50,8 @@ scheduler_pulse() {
       echo "stale:$(( age_hours / 24 ))d"
     fi
   else
-    # Fallback: проверить launchctl
-    if launchctl list 2>/dev/null | grep -qE "iwe\.scheduler|iwe\.feedback-watchdog"; then
+    # Fallback: проверить per-role launchd (post-2026-03)
+    if launchctl list 2>/dev/null | grep -qE 'com\.(strategist\.(morning|weekreview|notereview)|extractor\.inbox-check|exocortex\.scheduler|iwe\.(rule-classifier|scheduler|feedback-watchdog))'; then
       echo "registered-no-pulse"
     else
       echo "missing"

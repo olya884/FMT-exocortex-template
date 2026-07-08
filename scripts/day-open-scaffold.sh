@@ -43,6 +43,13 @@ DATE="${1:-$(date +%Y-%m-%d)}"
 CONFIG="$IWE/${IWE_GOVERNANCE_REPO:-DS-strategy}/exocortex/day-rhythm-config.yaml"
 SERVER_MODE="${IWE_SERVER_MODE:-0}"  # WP-283: 1 = Linux server, Mac-only MCP недоступен
 
+# Per-role launchd (post-2026-03): com.strategist.*, com.extractor.*, legacy iwe.* / com.exocortex.*
+_has_per_role_launchd() {
+  command -v launchctl &>/dev/null || return 1
+  launchctl list 2>/dev/null | grep -qE \
+    'com\.(strategist\.(morning|weekreview|notereview)|extractor\.inbox-check|exocortex\.scheduler|iwe\.(rule-classifier|scheduler|feedback-watchdog|synchronizer|feedback-triage))'
+}
+
 # --- Pre-flight healthcheck (WP-7 ФDay-Open-Hardening) ---
 PREFLIGHT_JSON=$(bash "$IWE/scripts/day-open-preflight.sh" "$DATE" "$CONFIG" 2>/dev/null || echo '{"calendar":"unknown","scout":"unknown","triage":"unknown"}')
 CALENDAR_PF=$(echo "$PREFLIGHT_JSON" | jq -r '.calendar // "unknown"')
@@ -505,7 +512,7 @@ render_iwe_status() {
   local last_feedback_triage_log
   last_feedback_triage_log=$(ls -t "$IWE/${IWE_GOVERNANCE_REPO:-DS-strategy}/logs/feedback-triage"*.log 2>/dev/null | head -1 || echo "")
   local has_launchd_unit=false
-  if launchctl list 2>/dev/null | grep -qE "iwe\.(scheduler|feedback-watchdog|synchronizer|feedback-triage)"; then
+  if _has_per_role_launchd; then
     has_launchd_unit=true
   fi
 
@@ -548,11 +555,11 @@ render_iwe_status() {
     elif [ -n "$last_watchdog_log" ]; then
       last_log_age_days=$(( ( $(date +%s) - $(stat -f %m "$last_watchdog_log" 2>/dev/null || stat -c %Y "$last_watchdog_log" 2>/dev/null || echo 0) ) / 86400 ))
     fi
-    echo "| Scheduler/триаж | 🔴 | **Mode A** (cron не отработал): юнит feedback-triage не зарегистрирован в launchctl, последний лог ${last_log_age_days}д назад |"
+    echo "| Scheduler/триаж | 🔴 | **Mode A** (cron не отработал): per-role launchd не зарегистрирован (com.strategist.* / com.extractor.*), последний лог ${last_log_age_days}д назад |"
 
-    # Auto-create incident-файл если ещё нет за сегодня
+    # Auto-create incident-файл если ещё нет за сегодня (только валидная дата YYYY-MM-DD)
     local incident_file="$IWE/${IWE_GOVERNANCE_REPO:-DS-strategy}/inbox/INCIDENT-scheduler-cron-not-fired-$DATE.md"
-    if [ ! -f "$incident_file" ]; then
+    if [[ "$DATE" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] && [ ! -f "$incident_file" ]; then
       mkdir -p "$IWE/${IWE_GOVERNANCE_REPO:-DS-strategy}/inbox"
       cat > "$incident_file" <<INCEOF
 ---
@@ -568,19 +575,20 @@ related_wp: WP-7, WP-178, WP-356
 auto_generated: true
 ---
 
-# Инцидент: scheduler/feedback-watchdog не запущен ($DATE)
+# Инцидент: per-role launchd не запущен ($DATE)
 
 ## Симптом (auto-detected)
 
-- launchctl: юнит \`iwe.scheduler\` или \`iwe.feedback-watchdog\` отсутствует
-- Последний лог \`~/logs/synchronizer/feedback-watchdog-*.log\` старше 24ч (или отсутствует)
+- launchctl: нет загруженных юнитов \`com.strategist.*\`, \`com.extractor.inbox-check\` или legacy \`iwe.*\`
+- Последний лог \`~/logs/synchronizer/feedback-watchdog-*.log\` или \`DS-strategy/logs/feedback-triage*.log\` старше 24ч (или отсутствует)
 - Mode A классификация (см. peer-сессия 2026-05-30-07 §Gap 3)
 
 ## Action items
 
-1. Проверить \`~/Library/LaunchAgents/\` на наличие plist
-2. \`bash $IWE/${IWE_GOVERNANCE_REPO:-DS-strategy}/scripts/install-launchd.sh\` для регистрации
-3. Запустить руками: \`bash \${IWE_SCHEDULER_PATH:-$IWE/scripts/scheduler.sh} --dry-run\`
+1. Проверить \`~/Library/LaunchAgents/\` на plist: \`com.strategist.morning\`, \`com.strategist.weekreview\`, \`com.extractor.inbox-check\`
+2. Установить из template: \`$IWE/FMT-exocortex-template/roles/*/scripts/launchd/*.plist\` → \`launchctl load\`
+3. Legacy \`scheduler.sh\` отключён (март 2026) — не использовать для диагностики
+4. Если ручной Day Open достаточен — \`status: deferred\`, убрать \`auto_generated\`
 
 ## Auto-generation note
 
@@ -789,7 +797,7 @@ render_compact_dashboard() {
 
   # Светофор — критические позиции
   echo "**IWE за ночь:**"
-  echo "  Scheduler: $(launchctl list 2>/dev/null | grep -qE 'iwe\.(scheduler|feedback)' && echo '🟢' || echo '🔴 не запущен')"
+  echo "  Scheduler: $(_has_per_role_launchd && echo '🟢 per-role launchd' || echo '🔴 не запущен')"
   local fpf_status
   if [ -d "$IWE/FPF/.git" ] && git -C "$IWE/FPF" fetch --quiet 2>/dev/null; then
     local behind; behind=$(git -C "$IWE/FPF" rev-list --count HEAD..origin/main 2>/dev/null || echo "?")
