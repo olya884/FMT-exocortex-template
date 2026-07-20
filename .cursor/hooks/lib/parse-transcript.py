@@ -13,6 +13,24 @@ skill_path_re = re.compile(
     r"\.(?:cursor|claude)/skills/(day-open|day-close|run-protocol|wp-new)/"
 )
 
+
+def count_todos(name, inp):
+    """Return todo list length if this tool_use is a TodoWrite call, else 0."""
+    if not isinstance(inp, dict):
+        return 0
+    # Native TodoWrite (Claude / older Cursor)
+    if name == "TodoWrite":
+        todos = inp.get("todos") or []
+        return len(todos) if isinstance(todos, list) else 0
+    # Cursor dynamic tools: CallDynamicTool(namespace=cursor, toolName=TodoWrite)
+    if name == "CallDynamicTool" and inp.get("toolName") == "TodoWrite":
+        args = inp.get("arguments") or {}
+        if isinstance(args, dict):
+            todos = args.get("todos") or []
+            return len(todos) if isinstance(todos, list) else 0
+    return 0
+
+
 with open(path, encoding="utf-8", errors="replace") as f:
     raw = f.read()
 
@@ -30,10 +48,9 @@ for line in raw.splitlines():
     if d.get("type") == "tool_use":
         name = d.get("name", "")
         inp = d.get("input") or {}
-        if name == "TodoWrite":
-            todos = inp.get("todos") or []
-            if isinstance(todos, list):
-                todo_max = max(todo_max, len(todos))
+        n = count_todos(name, inp)
+        if n:
+            todo_max = max(todo_max, n)
         if name == "Skill" and inp.get("skill") in protocol_skills:
             protocol_skill = inp["skill"]
 
@@ -44,10 +61,9 @@ for line in raw.splitlines():
                 continue
             name = item.get("name", "")
             inp = item.get("input") or {}
-            if name == "TodoWrite":
-                todos = inp.get("todos") or []
-                if isinstance(todos, list):
-                    todo_max = max(todo_max, len(todos))
+            n = count_todos(name, inp)
+            if n:
+                todo_max = max(todo_max, n)
             if name == "Skill" and inp.get("skill") in protocol_skills:
                 protocol_skill = inp["skill"]
 
