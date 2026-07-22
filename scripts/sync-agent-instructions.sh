@@ -1,54 +1,72 @@
 #!/usr/bin/env bash
 # routing: utility  deterministic=true
 # see WP-394 Ф4.2, DP.SC.159
-# sync-agent-instructions.sh — генерация AGENTS.md, .cursorrules из единого ядра CLAUDE.md
+# sync-agent-instructions.sh — генерация AGENTS.md из единого ядра CLAUDE.md + agent-blocks
 #
-# Сборка:
-#   AGENTS.md     = [header] + [SYNC-CORE] + [AGENTS-agent-blocks.md]
-#   .cursorrules  = [header] + [SYNC-CORE] + [CURSOR-agent-blocks.md]
-#   .cursor/rules/iwe-sync-core.mdc = [frontmatter] + [SYNC-CORE]
+# Single-source инструкций агентов (WP-394 Ф4.2). Устраняет молчаливую дивергенцию
+# между CLAUDE.md (Claude), AGENTS.md (Kimi) и инструкциями Hermes.
+#
+# Сборка (полная регенерация, НЕ маркерная вставка):
+#   AGENTS.md = [header] + [SYNC-CORE из CLAUDE.md] + [AGENTS-agent-blocks.md]
+#
+# Источники (в $IWE_ROOT, default $HOME/IWE):
+#   CLAUDE.md             — секция между <!-- SYNC-CORE-START --> и <!-- SYNC-CORE-END -->
+#   AGENTS-agent-blocks.md — агент-специфика (commit attribution, MCP, instructions level)
 #
 # Использование:
-#   ./scripts/sync-agent-instructions.sh            # dry-run (default)
-#   ./scripts/sync-agent-instructions.sh --force    # записать все targets
-#   ./scripts/sync-agent-instructions.sh --check    # exit 1 при drift
-#   ./scripts/sync-agent-instructions.sh --cursor-only --force
-#   ./scripts/sync-agent-instructions.sh --help
+#   ./sync-agent-instructions.sh            # dry-run: unified diff, без записи (DEFAULT)
+#   ./sync-agent-instructions.sh --force    # записать AGENTS.md (с бэкапом .bak)
+#   ./sync-agent-instructions.sh --check    # exit 1 если drift (для CI / Day Open), без записи
+#   ./sync-agent-instructions.sh --with-hermes  # дополнительно сгенерить persona.md Гермеса
+#   ./sync-agent-instructions.sh --help
+#
+# Переменные окружения:
+#   IWE_ROOT            — корень рабочего пространства (default $HOME/IWE)
+#   HERMES_RUNTIME_DIR  — каталог рантайма Hermes для --with-hermes (default $HOME/.hermes)
+#
+# Инвариант: CLAUDE.md SYNC-CORE — source-of-truth общего ядра. AGENTS.md derived, не править руками.
 
 set -euo pipefail
-
+# Load unified environment: WORKSPACE_DIR, IWE_ROOT, IWE_SCRIPTS, etc.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-IWE_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-export IWE_ROOT
-
+source "$SCRIPT_DIR/../.claude/lib/iwe-env-bootstrap.sh" || exit 1
 CLAUDE_MD="$IWE_ROOT/CLAUDE.md"
-AGENTS_BLOCKS="$IWE_ROOT/AGENTS-agent-blocks.md"
-CURSOR_BLOCKS="$IWE_ROOT/CURSOR-agent-blocks.md"
-OUT_AGENTS="$IWE_ROOT/AGENTS.md"
-OUT_CURSORRULES="$IWE_ROOT/.cursorrules"
-OUT_MDC="$IWE_ROOT/.cursor/rules/iwe-sync-core.mdc"
+BLOCKS_MD="$IWE_ROOT/AGENTS-agent-blocks.md"
+OUT_MD="$IWE_ROOT/AGENTS.md"
+HERMES_DIR="${HERMES_RUNTIME_DIR:-$HOME/.hermes}"
 
 MODE="dry-run"
-TARGET="all"
+WITH_HERMES=0
 for arg in "$@"; do
   case "$arg" in
     --force)       MODE="force" ;;
     --check)       MODE="check" ;;
-    --cursor-only) TARGET="cursor" ;;
-    --agents-only) TARGET="agents" ;;
+    --with-hermes) WITH_HERMES=1 ;;
     --help|-h)
-      grep '^#' "$0" | sed 's/^# \{0,1\}//' | head -24
+      grep '^#' "$0" | sed 's/^# \{0,1\}//' | head -32
       exit 0 ;;
     *) echo "Неизвестный аргумент: $arg (см. --help)" >&2; exit 2 ;;
   esac
 done
 
+# --- Валидация источников ---
+for f in "$CLAUDE_MD" "$BLOCKS_MD"; do
+  if [ ! -f "$f" ]; then
+    echo "[ERROR] Источник не найден: $f" >&2
+    exit 1
+  fi
+done
+
+# --- Guard: маркеры SYNC-CORE обязаны присутствовать (pre-миграция завершена?) ---
 if ! grep -q '<!-- SYNC-CORE-START -->' "$CLAUDE_MD" || ! grep -q '<!-- SYNC-CORE-END -->' "$CLAUDE_MD"; then
-  echo "[ABORT] В $CLAUDE_MD нет маркеров SYNC-CORE." >&2
+  echo "[ABORT] В $CLAUDE_MD нет маркеров <!-- SYNC-CORE-START/END -->." >&2
+  echo "        Pre-миграция не завершена — разметь ядро ДО генерации (WP-394 Ф4.2)." >&2
   exit 3
 fi
 
+# --- Извлечь SYNC-CORE ядро (между маркерами, не включая сами маркеры) ---
 extract_core() {
+  # Маркеры якорятся ^...$ — строка-маркер внутри тела ядра не закроет блок преждевременно.
   awk '
     /^[[:space:]]*<!-- SYNC-CORE-START -->[[:space:]]*$/ { grab=1; next }
     /^[[:space:]]*<!-- SYNC-CORE-END -->[[:space:]]*$/   { grab=0 }
@@ -56,119 +74,93 @@ extract_core() {
   ' "$CLAUDE_MD"
 }
 
-extract_agent_blocks() {
-  local file="$1" start_marker="$2" end_marker="$3"
-  awk -v s="$start_marker" -v e="$end_marker" '
-    $0 ~ s { grab=1; next }
-    $0 ~ e   { grab=0; next }
+# --- Извлечь агент-блоки (убрать внешние маркер-комментарии и HTML-комментарий-инструкцию) ---
+extract_blocks() {
+  awk '
+    /^[[:space:]]*<!-- AGENT-SPECIFIC-START -->[[:space:]]*$/ { grab=1; next }
+    /^[[:space:]]*<!-- AGENT-SPECIFIC-END -->[[:space:]]*$/   { grab=0; next }
     grab {
-      if ($0 ~ /^<!--/ && $0 !~ /-->/) { incomment=1 }
+      # пропустить вводный HTML-комментарий (<!-- ... -->) в начале блока
+      if ($0 ~ /^<!--/) { incomment=1 }
       if (incomment) { if ($0 ~ /-->/) { incomment=0 }; next }
       print
     }
-  ' "$file"
+  ' "$BLOCKS_MD"
 }
 
+# --- Собрать целевой AGENTS.md ---
 build_agents() {
-  if [ ! -f "$AGENTS_BLOCKS" ]; then
-    echo "[WARN] $AGENTS_BLOCKS не найден — AGENTS.md пропущен" >&2
-    return 1
-  fi
   cat <<'HEADER'
 # AGENTS.md
 
-> **Сгенерировано `scripts/sync-agent-instructions.sh`. НЕ РЕДАКТИРОВАТЬ ВРУЧНУЮ.**
-> Общее ядро → `CLAUDE.md` (SYNC-CORE). Агент-специфика → `AGENTS-agent-blocks.md`.
+> **Сгенерировано `scripts/sync-agent-instructions.sh` (WP-394 Ф4.2). НЕ РЕДАКТИРОВАТЬ ВРУЧНУЮ.**
+> Общее ядро → блок `<!-- SYNC-CORE -->` в `CLAUDE.md`. Агент-специфика → `AGENTS-agent-blocks.md`.
 
 HEADER
   extract_core
   echo
-  extract_agent_blocks "$AGENTS_BLOCKS" 'AGENT-SPECIFIC-START' 'AGENT-SPECIFIC-END'
+  extract_blocks
 }
 
-build_cursorrules() {
-  if [ ! -f "$CURSOR_BLOCKS" ]; then
-    echo "[WARN] $CURSOR_BLOCKS не найден" >&2
-    return 1
-  fi
-  cat <<HEADER
-# IWE — инструкции для Cursor Agent
+GENERATED="$(build_agents)"
 
-> **Сгенерировано \`scripts/sync-agent-instructions.sh\`. НЕ РЕДАКТИРОВАТЬ ВРУЧНУЮ.**
-> Общее ядро → \`CLAUDE.md\` (SYNC-CORE). Cursor-специфика → \`CURSOR-agent-blocks.md\`.
-> Детали L1: \`memory/protocol-*.md\`, \`.claude/rules/\`, \`.cursor/hooks.json\`.
-
-HEADER
-  extract_core
-  echo
-  extract_agent_blocks "$CURSOR_BLOCKS" 'CURSOR-SPECIFIC-START' 'CURSOR-SPECIFIC-END'
-  echo
-  echo "*Синхронизировано: $(date +%Y-%m-%d)*"
-}
-
-build_mdc() {
-  cat <<'FM'
----
-description: IWE SYNC-CORE — единое ядро агентов (автогенерация)
-alwaysApply: true
----
-
-FM
-  extract_core
-}
-
-write_or_check() {
-  local label="$1" out="$2" content="$3"
-  case "$MODE" in
-    check)
-      if [ ! -f "$out" ]; then
-        echo "[DRIFT] $label: $out не существует" >&2
-        return 1
-      fi
-      if ! diff -q <(printf '%s\n' "$content") "$out" >/dev/null 2>&1; then
-        echo "[DRIFT] $label: $out расходится с ядром" >&2
-        return 1
-      fi
-      echo "OK: $label"
-      ;;
-    dry-run)
-      echo "=== $label → $out ==="
-      if [ -f "$out" ]; then
-        if diff -q <(printf '%s\n' "$content") "$out" >/dev/null 2>&1; then
-          echo "  актуален"
-        else
-          diff -u "$out" <(printf '%s\n' "$content") | head -40 || true
-          echo "  --- для записи: --force ---"
-        fi
+# --- Режимы ---
+case "$MODE" in
+  check)
+    if [ ! -f "$OUT_MD" ]; then
+      echo "[DRIFT] $OUT_MD не существует — нужна генерация (--force)." >&2
+      exit 1
+    fi
+    if diff -q <(printf '%s\n' "$GENERATED") "$OUT_MD" >/dev/null 2>&1; then
+      echo "Синхронизация: OK (AGENTS.md соответствует ядру)"
+      exit 0
+    else
+      echo "[DRIFT] AGENTS.md расходится с ядром CLAUDE.md + agent-blocks. Запусти --force." >&2
+      exit 1
+    fi
+    ;;
+  dry-run)
+    echo "=== sync-agent-instructions.sh: dry-run ==="
+    echo "IWE_ROOT: $IWE_ROOT"
+    if [ -f "$OUT_MD" ]; then
+      if diff -q <(printf '%s\n' "$GENERATED") "$OUT_MD" >/dev/null 2>&1; then
+        echo "AGENTS.md уже актуален — изменений нет."
       else
-        echo "  будет создан (--force)"
-        printf '%s\n' "$content" | head -15
+        echo "--- unified diff (текущий → сгенерированный) ---"
+        diff -u "$OUT_MD" <(printf '%s\n' "$GENERATED") || true
+        echo "--- для записи: --force ---"
       fi
-      ;;
-    force)
-      if [ -f "$out" ]; then cp "$out" "$out.bak"; fi
-      printf '%s\n' "$content" > "$out"
-      echo "Записано: $out ($(wc -l < "$out" | tr -d ' ') строк)"
-      ;;
-  esac
-}
+    else
+      echo "AGENTS.md не существует — будет создан при --force. Превью:"
+      printf '%s\n' "$GENERATED" | head -20
+    fi
+    ;;
+  force)
+    if [ -f "$OUT_MD" ]; then
+      cp "$OUT_MD" "$OUT_MD.bak"
+      echo "Бэкап: $OUT_MD.bak"
+    fi
+    printf '%s\n' "$GENERATED" > "$OUT_MD"
+    echo "Записано: $OUT_MD ($(wc -l < "$OUT_MD" | tr -d ' ') строк)"
+    ;;
+esac
 
-ERR=0
-
-if [ "$TARGET" = "all" ] || [ "$TARGET" = "agents" ]; then
-  if AGENTS_CONTENT="$(build_agents 2>/dev/null)"; then
-    write_or_check "AGENTS.md" "$OUT_AGENTS" "$AGENTS_CONTENT" || ERR=1
-  fi
-fi
-
-if [ "$TARGET" = "all" ] || [ "$TARGET" = "cursor" ]; then
-  if CURSOR_CONTENT="$(build_cursorrules)"; then
-    write_or_check ".cursorrules" "$OUT_CURSORRULES" "$CURSOR_CONTENT" || ERR=1
+# --- Опционально: persona.md Hermes ---
+if [ "$WITH_HERMES" -eq 1 ]; then
+  if [ ! -d "$HERMES_DIR" ]; then
+    echo "[WARN] --with-hermes: каталог $HERMES_DIR не найден — persona.md пропущен (рантайм Hermes отсутствует)." >&2
+  elif [ "$MODE" = "force" ]; then
+    PERSONA="$HERMES_DIR/persona.md"
+    [ -f "$PERSONA" ] && cp "$PERSONA" "$PERSONA.bak"
+    {
+      echo "# Hermes Persona — IWE Core (generated by sync-agent-instructions.sh)"
+      echo
+      echo "> Общее ядро IWE. Hermes-специфика — в рантайме Hermes, не здесь."
+      echo
+      extract_core
+    } > "$PERSONA"
+    echo "Записано: $PERSONA"
   else
-    ERR=1
+    echo "[INFO] --with-hermes активен, но persona.md пишется только в режиме --force."
   fi
-  MDC_CONTENT="$(build_mdc)"
-  write_or_check "iwe-sync-core.mdc" "$OUT_MDC" "$MDC_CONTENT" || ERR=1
 fi
-
-exit "$ERR"

@@ -43,15 +43,6 @@ IWE="${IWE_ROOT:-$HOME/IWE}"
 CONFIG="${CONFIG_ARG:-$IWE/DS-strategy/exocortex/day-rhythm-config.yaml}"
 SECRETS_FILE="${HOME}/.secrets/google-calendar"
 
-# Fallback chain for local custom setups where IWE_ROOT points to template repo.
-if [[ ! -f "$CONFIG" ]]; then
-  if [[ -f "$HOME/IWE/DS-strategy/exocortex/day-rhythm-config.yaml" ]]; then
-    CONFIG="$HOME/IWE/DS-strategy/exocortex/day-rhythm-config.yaml"
-  elif [[ -f "$HOME/IWE/memory/day-rhythm-config.yaml" ]]; then
-    CONFIG="$HOME/IWE/memory/day-rhythm-config.yaml"
-  fi
-fi
-
 # --- Выбираем python3 с PyYAML ---
 _find_python3() {
   if python3 -c "import yaml" 2>/dev/null; then echo "python3"; return; fi
@@ -67,22 +58,6 @@ _find_python3() {
   echo "python3"
 }
 PYTHON3=$(_find_python3)
-
-# --- Источник календаря (google|ticktick), без зависимости от PyYAML ---
-CALENDAR_PROVIDER="google"
-if [[ -f "$CONFIG" ]]; then
-  _provider_line=$(grep -E '^[[:space:]]*calendar_provider:' "$CONFIG" 2>/dev/null | head -1 || true)
-  if [[ -n "$_provider_line" ]]; then
-    CALENDAR_PROVIDER=$(echo "$_provider_line" | cut -d':' -f2- | cut -d'#' -f1 | tr -d ' "' | tr '[:upper:]' '[:lower:]')
-  fi
-fi
-
-if [[ "$CALENDAR_PROVIDER" == "ticktick" ]]; then
-  echo "📅 **Календарь ($DATE):** ℹ️ источник = TickTick (Google Calendar отключён в day-rhythm-config)."
-  echo ""
-  echo "⏱ Свободных блоков ≥1h: **через TickTick**"
-  exit 0
-fi
 
 # --- Загружаем credentials ---
 if [[ -f "$SECRETS_FILE" ]]; then
